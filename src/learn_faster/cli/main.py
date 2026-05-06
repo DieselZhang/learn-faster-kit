@@ -8,7 +8,7 @@ Usage:
 
 import sys
 
-from learn_faster.cli.agents import AGENT_PROFILES, DEFAULT_AGENT
+from learn_faster.cli.agents import AGENT_PROFILES
 from learn_faster.cli.installer import check_initialization, init_project
 from learn_faster.cli.launcher import launch_coach
 from learn_faster.cli.ui import print_dim, print_error, print_header, print_info
@@ -28,10 +28,10 @@ def print_help() -> None:
     print("For more info: https://github.com/cheukyin175/learn-faster-kit")
 
 
-def parse_agent_arg(args: list[str]) -> str:
+def parse_agent_arg(args: list[str]) -> str | None:
     """Parse an optional --agent value from a command argument list."""
     if not args:
-        return DEFAULT_AGENT
+        return None
 
     if len(args) == 2 and args[0] == "--agent":
         return args[1]

@@ -1,13 +1,12 @@
 """Project initialization for the Learn FASTER CLI."""
 
 import json
-import platform
 import shutil
 from pathlib import Path
 
 import inquirer
 
-from learn_faster.cli.agents import get_agent_profile
+from learn_faster.cli.agents import AGENT_PROFILES, DEFAULT_AGENT, get_agent_profile
 from learn_faster.cli.paths import get_agent_templates_dir, get_shared_templates_dir
 from learn_faster.cli.ui import (
     BANNER,
@@ -113,9 +112,32 @@ def copy_markdown_templates(src: Path, dest: Path, label: str) -> None:
         print_success(f"Copied {label}: {file.name}")
 
 
+def choose_agent(agent_name: str | None) -> str:
+    """Choose an agent interactively unless one was provided."""
+    if agent_name:
+        return agent_name
+
+    agent_question = [
+        inquirer.List(
+            "agent",
+            message="Choose your agent",
+            choices=[
+                (profile.display_name, name)
+                for name, profile in sorted(
+                    AGENT_PROFILES.items(),
+                    key=lambda item: 0 if item[0] == DEFAULT_AGENT else 1,
+                )
+            ],
+            default=DEFAULT_AGENT,
+        ),
+    ]
+    agent_answer = inquirer.prompt(agent_question)
+    return agent_answer["agent"] if agent_answer else DEFAULT_AGENT
+
+
 def init_project(agent_name: str | None = None) -> None:
     """Initialize Learn FASTER in the current project."""
-    agent = get_agent_profile(agent_name)
+    agent = get_agent_profile(choose_agent(agent_name))
     cwd = Path.cwd()
     agent_templates_dir = get_agent_templates_dir(agent.name)
     shared_templates_dir = get_shared_templates_dir()
@@ -145,13 +167,6 @@ def init_project(agent_name: str | None = None) -> None:
     learning_mode = mode_answer["mode"] if mode_answer else "balanced"
     print_success(f"Selected: {MODE_NAMES[learning_mode]} mode\n")
 
-    macos_reminders = False
-    if platform.system() == "Darwin":
-        response = input(
-            f"{Colors.CYAN}Enable macOS Reminders for review notifications? (y/n):{Colors.RESET} "
-        ).strip().lower()
-        macos_reminders = response in ["y", "yes"]
-
     agent_dir = cwd / agent.config_dir
     agent_dir.mkdir(exist_ok=True)
 
@@ -169,14 +184,12 @@ def init_project(agent_name: str | None = None) -> None:
         "initialized": True,
         "agent": agent.name,
         "learning_mode": learning_mode,
-        "macos_reminders_enabled": macos_reminders,
     }
     config_path = learning_dir / "config.json"
     with open(config_path, "w") as f:
         json.dump(config, f, indent=2)
     print_success(
-        f"Created config.json (Mode: {MODE_NAMES[learning_mode]}, macOS Reminders: "
-        f"{'enabled' if macos_reminders else 'disabled'})"
+        f"Created config.json (Agent: {agent.display_name}, Mode: {MODE_NAMES[learning_mode]})"
     )
 
     scripts_dest = learning_dir / "scripts"

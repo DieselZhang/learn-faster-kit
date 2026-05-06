@@ -4,71 +4,12 @@ Calculate and manage spaced repetition review schedule based on FASTER framework
 """
 
 import json
-import subprocess
-import platform
 from datetime import datetime, timedelta
 from pathlib import Path
 
 
 # Spaced repetition intervals (in days)
 REVIEW_INTERVALS = [1, 3, 7, 14, 30, 60, 90]
-
-
-def add_macos_reminder(concept: str, topic_slug: str, review_date: datetime) -> bool:
-    """
-    Add a reminder to macOS Reminders app using AppleScript (macOS only).
-
-    Args:
-        concept: Name of the concept to review
-        topic_slug: Topic slug for reference
-        review_date: Date/time for the reminder
-
-    Returns:
-        True if reminder was added successfully, False otherwise
-    """
-    # Only run on macOS
-    if platform.system() != "Darwin":
-        return False
-
-    try:
-        # Format date for AppleScript (e.g., "December 15, 2024 at 9:00:00 AM")
-        reminder_date = review_date.strftime("%B %d, %Y at %I:%M:%S %p")
-
-        # Create AppleScript to add reminder
-        applescript = f'''
-        tell application "Reminders"
-            tell list "Learn FASTER"
-                make new reminder with properties {{name:"Review: {concept} ({topic_slug})", due date:date "{reminder_date}", body:"Time to review '{concept}' from your {topic_slug} learning. Run /review in Claude Code."}}
-            end tell
-        end tell
-        '''
-
-        # Execute AppleScript
-        subprocess.run(
-            ["osascript", "-e", applescript],
-            check=True,
-            capture_output=True,
-            text=True
-        )
-        return True
-
-    except subprocess.CalledProcessError:
-        # Reminder list might not exist, try creating it
-        try:
-            create_list_script = '''
-            tell application "Reminders"
-                make new list with properties {name:"Learn FASTER"}
-            end tell
-            '''
-            subprocess.run(["osascript", "-e", create_list_script], check=True, capture_output=True)
-
-            # Try adding reminder again
-            subprocess.run(["osascript", "-e", applescript], check=True, capture_output=True)
-            return True
-        except:
-            return False
-    except Exception:
-        return False
 
 
 def add_review_item(topic_slug: str, concept: str, base_dir: str = ".learning"):
@@ -82,7 +23,6 @@ def add_review_item(topic_slug: str, concept: str, base_dir: str = ".learning"):
     """
     topic_dir = Path(base_dir) / topic_slug
     schedule_path = topic_dir / "review_schedule.json"
-    metadata_path = topic_dir / "metadata.json"
 
     if not schedule_path.exists():
         print(f"❌ Topic '{topic_slug}' not found.")
@@ -109,28 +49,14 @@ def add_review_item(topic_slug: str, concept: str, base_dir: str = ".learning"):
 
     next_review_date = next_review_datetime.strftime("%Y-%m-%d")
 
-    # Check if macOS reminders are enabled in config
-    reminder_added = False
-    config_path = Path(base_dir) / "config.json"
-    if config_path.exists():
-        with open(config_path, "r") as f:
-            config = json.load(f)
-
-        if config.get("macos_reminders_enabled", False):
-            # Set reminder time to 9 AM on review date
-            reminder_datetime = next_review_datetime.replace(hour=9, minute=0, second=0)
-            reminder_added = add_macos_reminder(concept, topic_slug, reminder_datetime)
-
     # Output structured JSON for LLM parsing
     output = {
         "status": "success",
         "concept": concept,
         "next_review_days": REVIEW_INTERVALS[0],
         "next_review_date": next_review_date,
-        "macos_reminder_added": reminder_added,
         "llm_directive": "Concept added to review schedule. Use `AskUserQuestion` to ask what they want to do next: continue learning, practice",
-        "suggested_response": f"✅ Added '{concept}' to review schedule. First review in {REVIEW_INTERVALS[0]} day(s)." +
-                            (f" 📅 macOS Reminder set for {next_review_date} at 9:00 AM." if reminder_added else "")
+        "suggested_response": f"✅ Added '{concept}' to review schedule. First review in {REVIEW_INTERVALS[0]} day(s)."
     }
 
     print(json.dumps(output, indent=2))

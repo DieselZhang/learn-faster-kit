@@ -45,6 +45,3 @@ exclude = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/learn_faster"]
-
-[tool.hatch.build.targets.wheel.force-include]
-"src/learn_faster/templates" = "learn_faster/templates"

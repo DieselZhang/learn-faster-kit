@@ -35,6 +35,14 @@ Issues = "https://github.com/cheukyin175/learn-faster-kit/issues"
 [tool.uv]
 dev-dependencies = []
 
+[tool.hatch.build]
+exclude = [
+    "/.uv-cache",
+    "/.venv",
+    "/.pycache",
+    "/dist",
+]
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/learn_faster"]
 

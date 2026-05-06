@@ -7,7 +7,7 @@
 > AI-powered learning coach that accelerates mastery through spaced repetition, personalized syllabi, and active practice.
 
 **Built for [Claude Code](https://claude.com/claude-code)** - Integrates AI coaching directly into your development environment.
-Also supports [Codex](https://developers.openai.com/codex) with agent-specific `AGENTS.md` instructions and shared learning tools. Codex support is less strict than Claude Code because Codex does not currently expose a CLI flag for replacing the system prompt; Learn FASTER can only inject coaching behavior through `AGENTS.md`, startup prompts, or future skill-style instructions.
+Also supports [Codex](https://developers.openai.com/codex) with agent-specific `AGENTS.md` instructions and shared learning tools. Codex support is less strict than Claude Code because Codex does not currently expose a CLI flag for replacing the system prompt; Learn FASTER can only inject coaching behavior through `AGENTS.md`, startup prompts, or future skill-style instructions. Codex also only exposes its structured user-input tool in Plan mode, so in Default mode it cannot present guided choice prompts the same way Claude Code can.
 
 ## Why Learn FASTER?
 
@@ -87,7 +87,7 @@ your-project/
 └── CLAUDE.md
 ```
 
-For Codex, run `learn-faster init --agent codex`. It creates the same `.learning/` shared tools and writes Codex instructions to `AGENTS.md`. Because Codex does not provide a system-prompt replacement flag, adherence depends on Codex reading those project instructions and the launch prompt.
+For Codex, run `learn-faster init --agent codex`. It creates the same `.learning/` shared tools and writes Codex instructions to `AGENTS.md`. Because Codex does not provide a system-prompt replacement flag, adherence depends on Codex reading those project instructions and the launch prompt. Codex guided-choice interactions are also limited: the user-input tool is available only in Plan mode, so Default mode falls back to plain conversational questions.
 
 ## Quick Start
 

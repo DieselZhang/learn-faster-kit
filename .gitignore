@@ -49,4 +49,5 @@ build/
 
 # Local development
 .learning/
+.codex/
 CLAUDE.md

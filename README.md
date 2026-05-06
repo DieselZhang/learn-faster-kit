@@ -7,6 +7,7 @@
 > AI-powered learning coach that accelerates mastery through spaced repetition, personalized syllabi, and active practice.
 
 **Built for [Claude Code](https://claude.com/claude-code)** - Integrates AI coaching directly into your development environment.
+Also supports [Codex](https://developers.openai.com/codex) with agent-specific `AGENTS.md` instructions and shared learning tools. Codex support is less strict than Claude Code because Codex does not currently expose a CLI flag for replacing the system prompt; Learn FASTER can only inject coaching behavior through `AGENTS.md`, startup prompts, or future skill-style instructions.
 
 ## Why Learn FASTER?
 
@@ -62,7 +63,9 @@ uvx --from git+https://github.com/cheukyin175/learn-faster-kit.git learn-faster
 
 ### What Gets Installed
 
-On first run, learn-faster creates:
+On first run, learn-faster creates shared learning tools plus agent-specific instructions.
+
+For Claude Code:
 
 ```
 your-project/
@@ -84,6 +87,8 @@ your-project/
 └── CLAUDE.md
 ```
 
+For Codex, run `learn-faster init --agent codex`. It creates the same `.learning/` shared tools and writes Codex instructions to `AGENTS.md`. Because Codex does not provide a system-prompt replacement flag, adherence depends on Codex reading those project instructions and the launch prompt.
+
 ## Quick Start
 
 1. **Install the tool**
@@ -103,7 +108,7 @@ your-project/
 
     - Prompt you to select a learning mode
     - Initialize the project structure
-    - Launch Claude Code with FASTER coaching enabled
+    - Launch your configured agent with FASTER coaching enabled
 
 3. **Start learning**
 
@@ -148,6 +153,7 @@ Coach: ✅ Great explanation! You nailed the key insight—wrapped errors
 
 -   `learn-faster` - Launch Claude Code with FASTER coaching (auto-initializes on first run)
 -   `learn-faster init` - Force re-initialization or switch learning modes
+-   `learn-faster init --agent codex` - Initialize the project for Codex instead of Claude Code
 -   `learn-faster version` - Show current version
 
 ### Claude Code Slash Commands
